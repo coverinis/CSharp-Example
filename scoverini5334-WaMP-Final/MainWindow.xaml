@@ -1,0 +1,120 @@
+﻿<!--
+    \file MainWindow.xaml
+    \version PROG2120 - Assignment Final
+    \author Shawn Coverini
+    \date 2016-12-11
+    \brief XAML decleration
+-->
+<Window x:Class="SETPaint.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SETPaint"
+        mc:Ignorable="d"
+        Title="SETPaint" Height="576" Width="1024" x:Name="SETPaint" Loaded="SETPaint_Loaded" Closing="SETPaint_Closing">
+    <Grid>
+        <!--Main Menu-->
+        <Menu x:Name="mainMenu" VerticalAlignment="Top" Padding="2">
+            <MenuItem x:Name="menuFile"  Header="_File">
+                <MenuItem x:Name="menuNew" Header="_New" Click="menuNew_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/page_white_add.png"></Image>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="menuOpen" Header="_Open" Click="menuOpen_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/folder.png"></Image>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="menuSave" Header="_Save" Click="menuSave_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/diskette.png"></Image>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="menuSaveAs" Header="Save _As" Click="menuSaveAs_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/disk_multiple.png"></Image>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem x:Name="menuClose" Header="_Close" Click="menuClose_Click">
+                    <MenuItem.Icon>
+                        <Image Source="Resources/cancel.png"></Image>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+            <MenuItem x:Name="menuHelp" Header="_Help" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <MenuItem x:Name="menuAbout" Header="_About" Click="menuAbout_Click">
+                    <MenuItem.Icon>
+                        <Image Source="/Resources/information_small.png"></Image>
+                    </MenuItem.Icon>
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+        <!--Secondary Tools-->
+        <ToolBarTray x:Name="secondaryTools" DockPanel.Dock="Top" Margin="0,22,0,0" VerticalAlignment="Top">
+            <ToolBar Band="1" BandIndex="1">
+                <!--Fill-->
+                <Grid Width="Auto">
+                    <Label Content="Fill:" HorizontalAlignment="Left" Height="26" VerticalAlignment="Center" Margin="0,0,0,0" Width="46"/>
+                    <!--Reference: http://wpftoolkit.codeplex.com/-->
+                    <xctk:ColorPicker x:Name="colourFill" BorderBrush="White" Width="75" ColorMode="ColorCanvas" ShowDropDownButton="False" Margin="51,0,0,0" HorizontalAlignment="Left"></xctk:ColorPicker>
+                </Grid>
+                <!--Stroke-->
+                <Grid Width="Auto">
+                    <Label Content="Stroke:" HorizontalAlignment="Left" Height="26" VerticalAlignment="Center" Margin="0,0,0,0"/>
+                    <!--Reference: http://wpftoolkit.codeplex.com/-->
+                    <xctk:ColorPicker x:Name="colourStroke" BorderBrush="White" Width="75" ColorMode="ColorCanvas" ShowDropDownButton="False" Margin="51,0,0,0" HorizontalAlignment="Left"></xctk:ColorPicker>
+                </Grid>
+                <!--Thikness-->
+                <Label Content="Thickness:"/>
+                <ComboBox x:Name="borderThikness" Width="75" Height="32">
+                    <ComboBoxItem Padding="10" IsSelected="True">
+                        <Line Fill="Black" X2="25" X1="-2" Stroke="Black"></Line>
+                    </ComboBoxItem>
+                    <ComboBoxItem Padding="10">
+                        <Line Fill="Black" X2="25" X1="-2" Stroke="Black" StrokeThickness="2"></Line>
+                    </ComboBoxItem>
+                    <ComboBoxItem Padding="10">
+                        <Line Fill="Black" X2="25" X1="-2" Stroke="Black" StrokeThickness="4"></Line>
+                    </ComboBoxItem>
+                    <ComboBoxItem Padding="10">
+                        <Line Fill="Black" X2="25" X1="-2" Stroke="Black" StrokeThickness="6"></Line>
+                    </ComboBoxItem>
+                    <ComboBoxItem Padding="10">
+                        <Line Fill="Black" X2="25" X1="-2" Stroke="Black" StrokeThickness="8"></Line>
+                    </ComboBoxItem>
+                    <ComboBoxItem Padding="10">
+                        <Line Fill="Black" X2="25" X1="-2" Stroke="Black" StrokeThickness="10"></Line>
+                    </ComboBoxItem>
+                </ComboBox>
+            </ToolBar>
+        </ToolBarTray>
+        <!--Main Tools-->
+        <ToolBarTray x:Name="mainTools" Orientation="Vertical" Margin="0,59,0,22" HorizontalAlignment="Left">
+            <ToolBar Band="1" BandIndex="1">
+                <Button x:Name="drawLine" Click="drawLine_Click">
+                    <Image Source="Resources/draw_line.png"></Image>
+                </Button>
+                <Button x:Name="drawElipse" Click="drawElipse_Click">
+                    <Image Source="Resources/draw_ellipse.png"></Image>
+                </Button>
+                <Button x:Name="drawSquare" Click="drawSquare_Click">
+                    <Image Source="Resources/shape_square.png"></Image>
+                </Button>
+                <Button x:Name="drawErase" Click="drawErase_Click">
+                    <Image Source="Resources/draw_eraser.png"></Image>
+                </Button>
+            </ToolBar>
+        </ToolBarTray>
+        <!--Paint Canvas-->
+        <Canvas x:Name="paintArea" Margin="43,59,0,22" Background="White" MouseMove="paintArea_MouseMove" MouseDown="paintArea_MouseDown" MouseUp="paintArea_MouseUp" Cursor="Pen"/>
+        <StatusBar Height="22" VerticalAlignment="Bottom">
+            <StatusBar.Background>
+                <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+            </StatusBar.Background>
+            <Label x:Name="mousePosition" FontSize="12" Padding="0" Visibility="Hidden"></Label>
+        </StatusBar>
+    </Grid>
+</Window>
