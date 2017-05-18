@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SETPaint.Properties {
+namespace SharpDraw.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace SETPaint.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SETPaint.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SharpDraw.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -63,9 +63,9 @@ namespace SETPaint.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
-        internal static System.Drawing.Icon SETLogo {
+        internal static System.Drawing.Icon SharpDrawLogo {
             get {
-                object obj = ResourceManager.GetObject("SETLogo", resourceCulture);
+                object obj = ResourceManager.GetObject("SharpDrawLogo", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

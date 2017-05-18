@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SETPaint.Properties {
+namespace SharpDraw.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
