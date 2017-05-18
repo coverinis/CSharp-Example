@@ -1,5 +1,5 @@
-﻿
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Windows;
 /**
 * \file About.xaml.cs
 * \version PROG2120 - Assignment 4
@@ -7,12 +7,11 @@ using System.Diagnostics;
 * \date 2016-11-16
 * \brief Interaction logic for About.xaml
 */
-using System.Windows;
 
-namespace SETPaint
+namespace SharpDraw
 {
 
-    public partial class About : Window
+    public partial class About
     {
         
         public About()
@@ -27,7 +26,7 @@ namespace SETPaint
         /// <param name="e"></param>
         private void okay_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
 
         /// <summary>

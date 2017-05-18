@@ -5,13 +5,12 @@
     \date 2016-12-11
     \brief XAML decleration
 -->
-<Window x:Class="SETPaint.MainWindow"
+<Window x:Class="SharpDraw.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SETPaint"
         mc:Ignorable="d"
         Title="SETPaint" Height="576" Width="1024" x:Name="SETPaint" Loaded="SETPaint_Loaded" Closing="SETPaint_Closing">
     <Grid>

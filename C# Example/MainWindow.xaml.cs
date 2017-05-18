@@ -1,28 +1,30 @@
-﻿/// <header>
-/// <file>MainWindow.xaml.cs</file>
-/// <project>PROG2120 - Assignment 4</project>
-/// <author>Shawn Coverini</author>
-/// <date>2016-12-11</date>
-/// <summary>Interaction logic for MainWindow.xaml</summary>
-/// </header>
+﻿/**
+* \file MainWindow.xaml.cs
+* \version PROG2120 - Assignment 4
+* \author Shawn Coverini
+* \date 2016-11-16
+* \brief Interaction logic for MainWindow.xaml
+*/
+
 using System;
+using System.Configuration;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using System.Configuration;
 using Microsoft.Win32;
-using System.Windows.Markup;
-using System.IO;
 
-namespace SETPaint
+namespace SharpDraw
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         //Enumerators
         /// <summary>
@@ -30,27 +32,27 @@ namespace SETPaint
         /// </summary>
         enum PaintObject
         {
-            NULL,
-            LINE,
-            RECTANGLE,
-            ELIPSE
+            Null,
+            Line,
+            Rectangle,
+            Elipse
         }
         //Private
         #region
-        private Point pointerCoordinates;                   //Ending point on canvas
-        private Point startCoordinates;                     //Starting point on canvas
-        private PaintObject currentDraw = PaintObject.NULL; //Current object to draw
-        private int drawCount = 0;                          //Number of objects drawn
-        private Line line;                                  //Line storage
-        private Ellipse elip;                               //Elipse storage
-        private Rectangle rect;                             //Rectangle storage
-        private bool isChanged = false;                     //Flag if file was changed
-        private double width;                               //Temporary storage for shape width
-        private double height;                              //Temporary storage for shape height
-        private string title = "SETPaint";                  //Program title
-        private string file = "untitled.set";               //Name of current file
-        private string filePath = string.Empty;             //Path to current file
-        private string fileString;                          //XAML string of objects in canvas
+        private Point _pointerCoordinates;                   //Ending point on canvas
+        private Point _startCoordinates;                     //Starting point on canvas
+        private PaintObject _currentDraw = PaintObject.Null; //Current object to draw
+        private int _drawCount;                              //Number of objects drawn
+        private Line _line;                                  //Line storage
+        private Ellipse _elip;                               //Elipse storage
+        private Rectangle _rect;                             //Rectangle storage
+        private bool _isChanged;                             //Flag if file was changed
+        private double _width;                               //Temporary storage for shape width
+        private double _height;                              //Temporary storage for shape height
+        private const string ProgramTitle = "SharpDraw";     //Program title
+        private string _file = "untitled.sdraw";             //Name of current file
+        private string _filePath = string.Empty;             //Path to current file
+        private string _fileString;                          //XAML string of objects in canvas
         #endregion
 
         /// <summary>
@@ -63,17 +65,17 @@ namespace SETPaint
             string[] args = Environment.GetCommandLineArgs();
             if (args.Length > 1 && File.Exists(args[1]))
             {
-                filePath = args[1];
-                file = args[1].Split('\\').Last();
-                fileString = File.ReadAllText(filePath);
-                string[] elements = fileString.Split('\n');
-                drawCount = elements.Length - 1;
-                for (int i = 0; i < drawCount; i++)
+                _filePath = args[1];
+                _file = args[1].Split('\\').Last();
+                _fileString = File.ReadAllText(_filePath);
+                string[] elements = _fileString.Split('\n');
+                _drawCount = elements.Length - 1;
+                for (int i = 0; i < _drawCount; i++)
                 {
                     paintArea.Children.Add((UIElement)XamlReader.Parse(elements[i]));
                 }
             }
-            Title = string.Format("{0} - {1}", title, file);
+            Title = string.Format("{0} - {1}", ProgramTitle, _file);
         }
 
 
@@ -102,10 +104,10 @@ namespace SETPaint
             var setting = ConfigurationManager.AppSettings;
 
             //Fill fill colour
-            byte[] argb = translateColour(setting["defaultFill"]);
+            byte[] argb = TranslateColour(setting["defaultFill"]);
             colourFill.SelectedColor = Color.FromArgb(argb[0], argb[1], argb[2], argb[3]);
             //Fill stroke colour
-            argb = translateColour(setting["defaultStroke"]);
+            argb = TranslateColour(setting["defaultStroke"]);
             colourStroke.SelectedColor = Color.FromArgb(argb[0], argb[1], argb[2], argb[3]);
         }
 
@@ -115,7 +117,7 @@ namespace SETPaint
         /// </summary>
         /// <param name="hex">string : ARGB hex representing string</param>
         /// <returns>byte[] : A,R,G,B channels</returns>
-        public byte[] translateColour(string hex)
+        public byte[] TranslateColour(string hex)
         {
             System.Drawing.Color colour = System.Drawing.ColorTranslator.FromHtml(hex);
             byte[] argb = { colour.A, colour.R, colour.G, colour.B };
@@ -131,75 +133,85 @@ namespace SETPaint
         private void paintArea_MouseMove(object sender, MouseEventArgs e)
         {
             //Get current position and change status label
-            pointerCoordinates = Mouse.GetPosition(paintArea);
-            mousePosition.Content = string.Format("x : {0} y : {1}", pointerCoordinates.X.ToString().PadLeft(4, '0'), pointerCoordinates.Y.ToString().PadLeft(4, '0'));
-            switch (currentDraw)
+            _pointerCoordinates = Mouse.GetPosition(paintArea);
+            mousePosition.Content = string.Format("x : {0} y : {1}", _pointerCoordinates.X.ToString(CultureInfo.InvariantCulture).PadLeft(4, '0'), _pointerCoordinates.Y.ToString(CultureInfo.InvariantCulture).PadLeft(4, '0'));
+            switch (_currentDraw)
             {
                 //Update line
-                case PaintObject.LINE:
-                    if (line != null)
+                case PaintObject.Line:
+                    if (_line != null)
                     {
-                        (paintArea.Children[drawCount - 1] as Line).X2 = pointerCoordinates.X;
-                        (paintArea.Children[drawCount - 1] as Line).Y2 = pointerCoordinates.Y;
+                        var line = paintArea.Children[_drawCount - 1] as Line;
+                        if (line != null)
+                            line.X2 = _pointerCoordinates.X;
+                        var o = paintArea.Children[_drawCount - 1] as Line;
+                        if (o != null)
+                            o.Y2 = _pointerCoordinates.Y;
                     }
                     break;
                 //Update rectangle
-                case PaintObject.RECTANGLE:
-                    if (rect != null)
+                case PaintObject.Rectangle:
+                    if (_rect != null)
                     {
-                        width = pointerCoordinates.X - startCoordinates.X;
-                        height = pointerCoordinates.Y - startCoordinates.Y;
+                        _width = _pointerCoordinates.X - _startCoordinates.X;
+                        _height = _pointerCoordinates.Y - _startCoordinates.Y;
 
-                        if (width < 0)
+                        if (_width < 0)
                         {
-                            Canvas.SetLeft(rect, pointerCoordinates.X);
+                            Canvas.SetLeft(_rect, _pointerCoordinates.X);
                         }
                         else
                         {
-                            Canvas.SetLeft(rect, startCoordinates.X);
+                            Canvas.SetLeft(_rect, _startCoordinates.X);
                         }
 
-                        if (height < 0)
+                        if (_height < 0)
                         {
-                            Canvas.SetTop(rect, pointerCoordinates.Y);
+                            Canvas.SetTop(_rect, _pointerCoordinates.Y);
                         }
                         else
                         {
-                            Canvas.SetTop(rect, startCoordinates.Y);
+                            Canvas.SetTop(_rect, _startCoordinates.Y);
                         }
-                        (paintArea.Children[drawCount - 1] as Rectangle).Width = Math.Abs(width);
-                        (paintArea.Children[drawCount - 1] as Rectangle).Height = Math.Abs(height);
+                        var rectangle = paintArea.Children[_drawCount - 1] as Rectangle;
+                        if (rectangle != null)
+                            rectangle.Width = Math.Abs(_width);
+                        var o = paintArea.Children[_drawCount - 1] as Rectangle;
+                        if (o != null)
+                            o.Height = Math.Abs(_height);
                     }
                     break;
                 //Update elipse
-                case PaintObject.ELIPSE:
-                    if (elip != null)
+                case PaintObject.Elipse:
+                    if (_elip != null)
                     {
-                        width = pointerCoordinates.X - startCoordinates.X;
-                        height = pointerCoordinates.Y - startCoordinates.Y;
+                        _width = _pointerCoordinates.X - _startCoordinates.X;
+                        _height = _pointerCoordinates.Y - _startCoordinates.Y;
 
-                        if (width < 0)
+                        if (_width < 0)
                         {
-                            Canvas.SetLeft(elip, pointerCoordinates.X);
+                            Canvas.SetLeft(_elip, _pointerCoordinates.X);
                         }
                         else
                         {
-                            Canvas.SetLeft(elip, startCoordinates.X);
+                            Canvas.SetLeft(_elip, _startCoordinates.X);
                         }
 
-                        if (height < 0)
+                        if (_height < 0)
                         {
-                            Canvas.SetTop(elip, pointerCoordinates.Y);
+                            Canvas.SetTop(_elip, _pointerCoordinates.Y);
                         }
                         else
                         {
-                            Canvas.SetTop(elip, startCoordinates.Y);
+                            Canvas.SetTop(_elip, _startCoordinates.Y);
                         }
-                        (paintArea.Children[drawCount - 1] as Ellipse).Width = Math.Abs(width);
-                        (paintArea.Children[drawCount - 1] as Ellipse).Height = Math.Abs(height);
+                        var ellipse = paintArea.Children[_drawCount - 1] as Ellipse;
+                        if (ellipse != null)
+                            ellipse.Width = Math.Abs(_width);
+                        var o = paintArea.Children[_drawCount - 1] as Ellipse;
+                        if (o != null)
+                            o.Height = Math.Abs(_height);
                     }
-                    break;
-                default:
                     break;
             }
         }
@@ -214,50 +226,48 @@ namespace SETPaint
         private void paintArea_MouseDown(object sender, MouseButtonEventArgs e)
         {
             //get starting position of mouse and make visible in the status bar
-            startCoordinates = Mouse.GetPosition(paintArea);
+            _startCoordinates = Mouse.GetPosition(paintArea);
             mousePosition.Visibility = Visibility.Visible;
-            switch (currentDraw)
+            switch (_currentDraw)
             {
                 //Create initaial rubber band line
-                case PaintObject.LINE:
-                    line = new Line();
-                    line.X1 = startCoordinates.X;
-                    line.Y1 = startCoordinates.Y;
-                    line.Fill = new SolidColorBrush(Color.FromArgb(60,60,170,230));
-                    line.Stroke = new SolidColorBrush(Colors.Gray);
-                    line.StrokeThickness = 1;
-                    line.StrokeDashArray = new DoubleCollection() { 2 };
-                    paintArea.Children.Add(line);
-                    isChanged = true;
-                    drawCount++;
+                case PaintObject.Line:
+                    _line = new Line();
+                    _line.X1 = _startCoordinates.X;
+                    _line.Y1 = _startCoordinates.Y;
+                    _line.Fill = new SolidColorBrush(Color.FromArgb(60,60,170,230));
+                    _line.Stroke = new SolidColorBrush(Colors.Gray);
+                    _line.StrokeThickness = 1;
+                    _line.StrokeDashArray = new DoubleCollection() { 2 };
+                    paintArea.Children.Add(_line);
+                    _isChanged = true;
+                    _drawCount++;
                     break;
                 //Create initaial rubber band rectangle
-                case PaintObject.RECTANGLE:
-                    rect = new Rectangle();
-                    Canvas.SetLeft(rect, startCoordinates.X);
-                    Canvas.SetTop(rect, startCoordinates.Y);
-                    rect.Fill = new SolidColorBrush(Color.FromArgb(60, 60, 170, 230));
-                    rect.Stroke = new SolidColorBrush(Colors.Gray);
-                    rect.StrokeThickness = 1;
-                    rect.StrokeDashArray = new DoubleCollection() { 2 };
-                    paintArea.Children.Add(rect);
-                    isChanged = true;
-                    drawCount++;
+                case PaintObject.Rectangle:
+                    _rect = new Rectangle();
+                    Canvas.SetLeft(_rect, _startCoordinates.X);
+                    Canvas.SetTop(_rect, _startCoordinates.Y);
+                    _rect.Fill = new SolidColorBrush(Color.FromArgb(60, 60, 170, 230));
+                    _rect.Stroke = new SolidColorBrush(Colors.Gray);
+                    _rect.StrokeThickness = 1;
+                    _rect.StrokeDashArray = new DoubleCollection() { 2 };
+                    paintArea.Children.Add(_rect);
+                    _isChanged = true;
+                    _drawCount++;
                     break;
                 //Create initaial rubber band elipse
-                case PaintObject.ELIPSE:
-                    elip = new Ellipse();
-                    Canvas.SetLeft(elip, startCoordinates.X);
-                    Canvas.SetTop(elip, startCoordinates.Y);
-                    elip.Fill = new SolidColorBrush(Color.FromArgb(60, 60, 170, 230));
-                    elip.Stroke = new SolidColorBrush(Colors.Gray);
-                    elip.StrokeThickness = 1;
-                    elip.StrokeDashArray = new DoubleCollection() { 2 };
-                    paintArea.Children.Add(elip);
-                    isChanged = true;
-                    drawCount++;
-                    break;
-                default:
+                case PaintObject.Elipse:
+                    _elip = new Ellipse();
+                    Canvas.SetLeft(_elip, _startCoordinates.X);
+                    Canvas.SetTop(_elip, _startCoordinates.Y);
+                    _elip.Fill = new SolidColorBrush(Color.FromArgb(60, 60, 170, 230));
+                    _elip.Stroke = new SolidColorBrush(Colors.Gray);
+                    _elip.StrokeThickness = 1;
+                    _elip.StrokeDashArray = new DoubleCollection() { 2 };
+                    paintArea.Children.Add(_elip);
+                    _isChanged = true;
+                    _drawCount++;
                     break;
             }
         }
@@ -271,33 +281,40 @@ namespace SETPaint
         private void paintArea_MouseUp(object sender, MouseButtonEventArgs e)
         {
             mousePosition.Visibility = Visibility.Hidden;
-            switch (currentDraw)
+            switch (_currentDraw)
             {
-                case PaintObject.LINE:
-                    line.Fill = new SolidColorBrush((Color)colourFill.SelectedColor);
-                    line.Stroke = new SolidColorBrush((Color)colourStroke.SelectedColor);
-                    line.StrokeThickness = ((Line)((ComboBoxItem)borderThikness.SelectedItem).Content).StrokeThickness;
-                    line.StrokeDashArray = new DoubleCollection();
-                    fileString += XamlWriter.Save(paintArea.Children[drawCount - 1]) + '\n';
-                    line = null;
+                case PaintObject.Line:
+                    if (colourFill.SelectedColor != null && colourStroke.SelectedColor != null)
+                    {
+                        _line.Fill = new SolidColorBrush((Color)colourFill.SelectedColor);
+                        _line.Stroke = new SolidColorBrush((Color)colourStroke.SelectedColor);
+                    }
+                    _line.StrokeThickness = ((Line)((ComboBoxItem)borderThikness.SelectedItem).Content).StrokeThickness;
+                    _line.StrokeDashArray = new DoubleCollection();
+                    _fileString += XamlWriter.Save(paintArea.Children[_drawCount - 1]) + '\n';
+                    _line = null;
                     break;
-                case PaintObject.RECTANGLE:
-                    rect.Fill = new SolidColorBrush((Color)colourFill.SelectedColor);
-                    rect.Stroke = new SolidColorBrush((Color)colourStroke.SelectedColor);
-                    rect.StrokeThickness = ((Line)((ComboBoxItem)borderThikness.SelectedItem).Content).StrokeThickness;
-                    rect.StrokeDashArray = new DoubleCollection();
-                    fileString += XamlWriter.Save(paintArea.Children[drawCount - 1]) + '\n';
-                    rect = null;
+                case PaintObject.Rectangle:
+                    if (colourFill.SelectedColor != null && colourStroke.SelectedColor != null)
+                    {
+                        _rect.Fill = new SolidColorBrush((Color)colourFill.SelectedColor);
+                        _rect.Stroke = new SolidColorBrush((Color)colourStroke.SelectedColor);
+                    }
+                    _rect.StrokeThickness = ((Line)((ComboBoxItem)borderThikness.SelectedItem).Content).StrokeThickness;
+                    _rect.StrokeDashArray = new DoubleCollection();
+                    _fileString += XamlWriter.Save(paintArea.Children[_drawCount - 1]) + '\n';
+                    _rect = null;
                     break;
-                case PaintObject.ELIPSE:
-                    elip.Fill = new SolidColorBrush((Color)colourFill.SelectedColor);
-                    elip.Stroke = new SolidColorBrush((Color)colourStroke.SelectedColor);
-                    elip.StrokeThickness = ((Line)((ComboBoxItem)borderThikness.SelectedItem).Content).StrokeThickness;
-                    elip.StrokeDashArray = new DoubleCollection();
-                    fileString += XamlWriter.Save(paintArea.Children[drawCount - 1]) + '\n';
-                    elip = null;
-                    break;
-                default:
+                case PaintObject.Elipse:
+                    if (colourFill.SelectedColor != null && colourStroke.SelectedColor != null)
+                    {
+                        _elip.Fill = new SolidColorBrush((Color)colourFill.SelectedColor);
+                        _elip.Stroke = new SolidColorBrush((Color)colourStroke.SelectedColor);
+                    }
+                    _elip.StrokeThickness = ((Line)((ComboBoxItem)borderThikness.SelectedItem).Content).StrokeThickness;
+                    _elip.StrokeDashArray = new DoubleCollection();
+                    _fileString += XamlWriter.Save(paintArea.Children[_drawCount - 1]) + '\n';
+                    _elip = null;
                     break;
             }
         }
@@ -310,7 +327,7 @@ namespace SETPaint
         /// <param name="e"></param>
         private void drawLine_Click(object sender, RoutedEventArgs e)
         {
-            currentDraw = PaintObject.LINE;
+            _currentDraw = PaintObject.Line;
         }
 
         /// <summary>
@@ -321,7 +338,7 @@ namespace SETPaint
         /// <param name="e"></param>
         private void drawElipse_Click(object sender, RoutedEventArgs e)
         {
-            currentDraw = PaintObject.ELIPSE;
+            _currentDraw = PaintObject.Elipse;
         }
 
         /// <summary>
@@ -332,7 +349,7 @@ namespace SETPaint
         /// <param name="e"></param>
         private void drawSquare_Click(object sender, RoutedEventArgs e)
         {
-            currentDraw = PaintObject.RECTANGLE;
+            _currentDraw = PaintObject.Rectangle;
         }
 
         /// <summary>
@@ -349,8 +366,8 @@ namespace SETPaint
                 if (result == MessageBoxResult.Yes)
                 {
                     paintArea.Children.Clear();
-                    drawCount = 0;
-                    isChanged = true;
+                    _drawCount = 0;
+                    _isChanged = true;
                 }
             }
         }
@@ -375,7 +392,7 @@ namespace SETPaint
         /// <param name="e"></param>
         private void menuNew_Click(object sender, RoutedEventArgs e)
         {
-            if(filePath == string.Empty)
+            if(_filePath == string.Empty)
             {
                 SaveToFileAndClear();
             }
@@ -392,11 +409,11 @@ namespace SETPaint
         private void ClearFileInfo()
         {
             paintArea.Children.Clear();
-            filePath = string.Empty;
-            fileString = string.Empty;
-            file = "untitled.set";
-            Title = string.Format("{0} - {1}", title, file);
-            drawCount = 0;
+            _filePath = string.Empty;
+            _fileString = string.Empty;
+            _file = "untitled.sdraw";
+            Title = string.Format("{0} - {1}", ProgramTitle, _file);
+            _drawCount = 0;
         }
 
         /// <summary>
@@ -405,17 +422,17 @@ namespace SETPaint
         /// </summary>
         private void SaveToFileAndClear()
         {
-            if (isChanged)
+            if (_isChanged)
             {
                 MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show("Save Changes?", "New Image", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
                 {
                     SaveFileDialog save = new SaveFileDialog();
-                    save.FileName = file;
-                    save.Filter = "SET Image (*.set)|*.set";
+                    save.FileName = _file;
+                    save.Filter = "SET Image (*.sdraw)|*.sdraw";
                     if (save.ShowDialog() == true)
                     {
-                        File.WriteAllText(save.FileName, fileString);
+                        File.WriteAllText(save.FileName, _fileString);
                         ClearFileInfo();
                     } 
                 }
@@ -423,7 +440,7 @@ namespace SETPaint
                 {
                     ClearFileInfo();
                 }
-                isChanged = false;
+                _isChanged = false;
             }
         }
 
@@ -436,24 +453,24 @@ namespace SETPaint
         /// <param name="e"></param>
         private void menuOpen_Click(object sender, RoutedEventArgs e)
         {
-            if (filePath == string.Empty)
+            if (_filePath == string.Empty)
             {
                 SaveToFileAndClear();
             }
             OpenFileDialog open = new OpenFileDialog();
-            open.Filter = "SET Image (*.set)|*.set";
+            open.Filter = "SET Image (*.sdraw)|*.sdraw";
             if (open.ShowDialog() == true)
             {
-                fileString = File.ReadAllText(open.FileName);
-                string[] elements = fileString.Split('\n');
-                drawCount = elements.Length - 1;
-                for (int i = 0; i < drawCount; i++)
+                _fileString = File.ReadAllText(open.FileName);
+                string[] elements = _fileString.Split('\n');
+                _drawCount = elements.Length - 1;
+                for (int i = 0; i < _drawCount; i++)
                 {
                     paintArea.Children.Add((UIElement)XamlReader.Parse(elements[i]));
                 }
-                filePath = open.FileName;
-                file = filePath.Split('\\').Last();
-                Title = string.Format("{0} - {1}", title, file);
+                _filePath = open.FileName;
+                _file = _filePath.Split('\\').Last();
+                Title = string.Format("{0} - {1}", ProgramTitle, _file);
             }
         }
 
@@ -465,7 +482,7 @@ namespace SETPaint
         /// <param name="e"></param>
         private void menuSave_Click(object sender, RoutedEventArgs e)
         {
-            isChanged = false;
+            _isChanged = false;
             SaveFile();
         }
 
@@ -475,22 +492,22 @@ namespace SETPaint
         /// </summary>
         private void SaveFile()
         {
-            if (filePath == string.Empty)
+            if (_filePath == string.Empty)
             {
                 SaveFileDialog save = new SaveFileDialog();
-                save.FileName = file;
-                save.Filter = "SET Image (*.set)|*.set";
+                save.FileName = _file;
+                save.Filter = "SET Image (*.sdraw)|*.sdraw";
                 if (save.ShowDialog() == true)
                 {
-                    File.WriteAllText(save.FileName, fileString);
-                    filePath = save.FileName;
-                    file = filePath.Split('\\').Last();
-                    Title = string.Format("{0} - {1}", title, file);
+                    File.WriteAllText(save.FileName, _fileString);
+                    _filePath = save.FileName;
+                    _file = _filePath.Split('\\').Last();
+                    Title = string.Format("{0} - {1}", ProgramTitle, _file);
                 }
             }
             else
             {
-                File.WriteAllText(filePath, fileString);
+                File.WriteAllText(_filePath, _fileString);
             }
         }
 
@@ -503,14 +520,14 @@ namespace SETPaint
         private void menuSaveAs_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog save = new SaveFileDialog();
-            save.FileName = file;
-            save.Filter = "SET Image (*.set)|*.set";
+            save.FileName = _file;
+            save.Filter = "SET Image (*.sdraw)|*.sdraw";
             if (save.ShowDialog() == true)
             {
-                File.WriteAllText(save.FileName, fileString);
-                filePath = save.FileName;
-                file = filePath.Split('\\').Last();
-                Title = string.Format("{0} - {1}", title, file);
+                File.WriteAllText(save.FileName, _fileString);
+                _filePath = save.FileName;
+                _file = _filePath.Split('\\').Last();
+                Title = string.Format("{0} - {1}", ProgramTitle, _file);
             }
         }
 
@@ -522,7 +539,7 @@ namespace SETPaint
         /// <param name="e"></param>
         private void SETPaint_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if ((filePath == string.Empty && paintArea.Children.Count != 0) || isChanged)
+            if ((_filePath == string.Empty && paintArea.Children.Count != 0) || _isChanged)
             {
                 MessageBoxResult result = Xceed.Wpf.Toolkit.MessageBox.Show("Save Changes?", "New Image", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Yes)
